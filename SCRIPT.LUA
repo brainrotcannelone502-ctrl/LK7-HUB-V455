@@ -1,7 +1,7 @@
 local player = game.Players.LocalPlayer
 local pgui = player:WaitForChild("PlayerGui")
 
--- Limpeza para evitar erros de execução duplicada
+-- Limpa versões antigas para garantir que o balão rosa suma de vez
 if pgui:FindFirstChild("LK7_KurdStyle_V6") then pgui.LK7_KurdStyle_V6:Destroy() end
 
 local sg = Instance.new("ScreenGui", pgui)
@@ -109,7 +109,7 @@ local function SafeVouch(msg)
     end
 end
 
--- ABA PLAYER
+-- ABA PLAYER (CHATS FAKES)
 CreateAction("Vouch: Vlww mn", PlayerPage, function() SafeVouch("vlww mn") end)
 CreateAction("Vouch: Chegou aqui", PlayerPage, function() SafeVouch("chegou aqui") end)
 CreateAction("Vouch: Tmjjjj", PlayerPage, function() SafeVouch("tmjjjj") end)
@@ -127,10 +127,10 @@ CreateAction("Fake Jump", VisualPage, function()
     end
     if target then target.Character.Humanoid.Jump = true end
 end)
-CreateAction("Fake: Carpete", VisualPage, function() print("Carpete Visual") end)
-CreateAction("Fake: Martelo", VisualPage, function() print("Martelo Visual") end)
+CreateAction("Fake: Carpete", VisualPage, function() print("Carpete") end)
+CreateAction("Fake: Martelo", VisualPage, function() print("Martelo") end)
 
--- ABA FUN (SEM O BALÃO ROSA)
+-- ABA FUN (TOTALMENTE INVISÍVEL)
 CreateAction("Rocket Fogo (V)", FunPage, function()
     local hrp = player.Character:FindFirstChild("HumanoidRootPart")
     if hrp then
@@ -146,10 +146,10 @@ end)
 CreateAction("Balloon Brainrot (V)", FunPage, function()
     local hrp = player.Character:FindFirstChild("HumanoidRootPart")
     if hrp then
+        -- Função de subida sem NENHUM objeto visual (bola rosa removida)
         local bv = Instance.new("BodyVelocity", hrp)
-        bv.Name = "FloatForce"
         bv.MaxForce = Vector3.new(0, math.huge, 0)
-        bv.Velocity = Vector3.new(0, 20, 0) -- Sobe bem devagar e sem nada visual
+        bv.Velocity = Vector3.new(0, 20, 0) -- Velocidade constante e lenta
         task.wait(5)
         bv:Destroy()
     end
