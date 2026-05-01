@@ -1,6 +1,7 @@
--- Limpa versões anteriores para evitar bugs e kicks
 local player = game.Players.LocalPlayer
 local pgui = player:WaitForChild("PlayerGui")
+
+-- Remove versão antiga se existir para não dar lag
 if pgui:FindFirstChild("LK7_KurdStyle_V6") then pgui.LK7_KurdStyle_V6:Destroy() end
 
 local sg = Instance.new("ScreenGui", pgui)
@@ -10,7 +11,6 @@ sg.ResetOnSpawn = false
 local VALOR_ROBUX = 100000
 local TECLA_TOGGLE = Enum.KeyCode.P
 
--- DESIGN PRINCIPAL
 local Main = Instance.new("Frame", sg)
 Main.Size = UDim2.new(0, 550, 0, 380)
 Main.Position = UDim2.new(0.5, -275, 0.5, -190)
@@ -33,7 +33,6 @@ Title.TextSize = 16
 Title.TextXAlignment = Enum.TextXAlignment.Left
 Title.BackgroundTransparency = 1
 
--- CAIXA DE NOME (Target)
 local TargetInput = Instance.new("TextBox", Main)
 TargetInput.Size = UDim2.new(0, 120, 0, 30)
 TargetInput.Position = UDim2.new(0, 10, 0, 55)
@@ -88,11 +87,10 @@ local function CreatePage(name)
     return p
 end
 
--- CRIAÇÃO DAS PÁGINAS
 local PlayerPage = CreatePage("Player")
 local VisualPage = CreatePage("Visual")
 local FunPage = CreatePage("Fun")
-FunPage.Visible = true -- Começa na Fun
+FunPage.Visible = true
 
 local function CreateAction(name, parent, callback)
     local btn = Instance.new("TextButton", parent)
@@ -100,29 +98,27 @@ local function CreateAction(name, parent, callback)
     btn.Text = name
     btn.TextColor3 = Color3.new(1, 1, 1)
     btn.Font = Enum.Font.GothamMedium
-    btn.TextSize = 12
+    btn.TextSize = 11
     Instance.new("UICorner", btn)
     btn.MouseButton1Click:Connect(callback)
 end
 
--- LÓGICA DE VOUCH (CHATS FAKES)
 local function FakeVouch(msg)
-    local targetName = TargetInput.Text:lower()
-    if targetName == "" then return end
+    local t = TargetInput.Text:lower()
     for _, p in pairs(game.Players:GetPlayers()) do
-        if p.Name:lower():find(targetName) or p.DisplayName:lower():find(targetName) then
+        if p.Name:lower():find(t) or p.DisplayName:lower():find(t) then
             game:GetService("Chat"):Chat(p.Character.Head, msg, "White")
         end
     end
 end
 
--- 1. ABA PLAYER (VOUCHS)
+-- ABA PLAYER (TODOS OS VOUCHS)
 CreateAction("Vouch: Vlww mn", PlayerPage, function() FakeVouch("vlww mn") end)
 CreateAction("Vouch: Chegou aqui", PlayerPage, function() FakeVouch("chegou aqui") end)
 CreateAction("Vouch: Tmjjjj", PlayerPage, function() FakeVouch("tmjjjj") end)
 CreateAction("Vouch: Confiavel", PlayerPage, function() FakeVouch("confiavel") end)
 
--- 2. ABA VISUAL (FAKE TOOLS E JUMP)
+-- ABA VISUAL (JUMP E TOOLS)
 CreateAction("Fake Jump", VisualPage, function()
     local target = nil
     local dist = math.huge
@@ -134,37 +130,47 @@ CreateAction("Fake Jump", VisualPage, function()
     end
     if target then target.Character.Humanoid.Jump = true end
 end)
-CreateAction("Fake: Carpete", VisualPage, function() print("Fake Carpete") end)
-CreateAction("Fake: Martelo", VisualPage, function() print("Fake Hammer") end)
+CreateAction("Fake: Carpete", VisualPage, function() print("Carpete") end)
+CreateAction("Fake: Martelo", VisualPage, function() print("Martelo") end)
 
--- 3. ABA FUN (RAGDOLL, BALLOON, ROCKET)
-CreateAction("Balloon Brainrot (V)", FunPage, function() 
-    -- Lógica visual do balão (simplificada para evitar kick)
-    print("Balão Ativado")
-end)
-
+-- ABA FUN (ROCKET, BALLOON, RAGDOLL)
 CreateAction("Rocket Fogo (V)", FunPage, function()
     local hrp = player.Character:FindFirstChild("HumanoidRootPart")
     if hrp then
-        local fire = Instance.new("Fire", hrp)
+        local f = Instance.new("Fire", hrp)
         local bv = Instance.new("BodyVelocity", hrp)
         bv.MaxForce = Vector3.new(0, math.huge, 0)
         bv.Velocity = Vector3.new(0, 100, 0)
         task.wait(2)
-        fire:Destroy(); bv:Destroy()
+        f:Destroy(); bv:Destroy()
+    end
+end)
+
+CreateAction("Balloon Brainrot (V)", FunPage, function()
+    local head = player.Character:FindFirstChild("Head")
+    if head then
+        local b = Instance.new("Part", player.Character)
+        b.Shape = "Ball"
+        b.Size = Vector3.new(3,3,3)
+        b.Color = Color3.new(1,0,1)
+        b.Position = head.Position + Vector3.new(0,5,0)
+        local r = Instance.new("RopeConstraint", player.Character)
+        local a0, a1 = Instance.new("Attachment", b), Instance.new("Attachment", head)
+        r.Attachment0, r.Attachment1, r.Length, r.Visible = a0, a1, 5, true
+        task.wait(5)
+        b:Destroy(); r:Destroy()
     end
 end)
 
 CreateAction("Ragdoll", FunPage, function()
-    local hum = player.Character:FindFirstChildOfClass("Humanoid")
-    if hum then
-        hum:ChangeState(Enum.HumanoidStateType.Physics)
+    local h = player.Character:FindFirstChildOfClass("Humanoid")
+    if h then
+        h:ChangeState(Enum.HumanoidStateType.Physics)
         task.wait(2)
-        hum:ChangeState(Enum.HumanoidStateType.GettingUp)
+        h:ChangeState(Enum.HumanoidStateType.GettingUp)
     end
 end)
 
--- ROBUX DISPLAY
 local RobuxDisplay = Instance.new("TextLabel", Main)
 RobuxDisplay.Size = UDim2.new(0, 200, 0, 30)
 RobuxDisplay.Position = UDim2.new(1, -210, 1, -35)
@@ -173,7 +179,6 @@ RobuxDisplay.TextColor3 = Color3.fromRGB(255, 215, 0)
 RobuxDisplay.Text = "Robux: 100.000"
 RobuxDisplay.Font = Enum.Font.GothamBold
 
--- TOGGLE P
 game:GetService("UserInputService").InputBegan:Connect(function(i, g)
     if not g and i.KeyCode == TECLA_TOGGLE then Main.Visible = not Main.Visible end
 end)
