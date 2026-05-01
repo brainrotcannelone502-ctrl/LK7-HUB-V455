@@ -1,14 +1,12 @@
 local player = game.Players.LocalPlayer
 local pgui = player:WaitForChild("PlayerGui")
 
--- Limpa versões antigas para garantir que o balão rosa suma de vez
 if pgui:FindFirstChild("LK7_KurdStyle_V6") then pgui.LK7_KurdStyle_V6:Destroy() end
 
 local sg = Instance.new("ScreenGui", pgui)
 sg.Name = "LK7_KurdStyle_V6"
 sg.ResetOnSpawn = false
 
-local VALOR_ROBUX = 100000
 local TECLA_TOGGLE = Enum.KeyCode.P
 
 local Main = Instance.new("Frame", sg)
@@ -34,7 +32,6 @@ TargetInput.Size = UDim2.new(0, 120, 0, 30)
 TargetInput.Position = UDim2.new(0, 10, 0, 55)
 TargetInput.BackgroundColor3 = Color3.fromRGB(30, 31, 40)
 TargetInput.PlaceholderText = "Nome do Player"
-TargetInput.Text = ""
 TargetInput.TextColor3 = Color3.new(1, 1, 1)
 TargetInput.Font = Enum.Font.GothamSemibold
 TargetInput.TextSize = 12
@@ -99,39 +96,63 @@ local function CreateAction(name, parent, callback)
     btn.MouseButton1Click:Connect(callback)
 end
 
-local function SafeVouch(msg)
+-- Função para simular o comando saindo do alvo
+local function MandarComandoFake(cmd)
     local t = TargetInput.Text:lower()
     if t == "" then return end
     for _, p in pairs(game.Players:GetPlayers()) do
         if p.Name:lower():find(t) or p.DisplayName:lower():find(t) then
-            game:GetService("Chat"):Chat(p.Character.Head, msg, "White")
+            game:GetService("Chat"):Chat(p.Character.Head, "/"..cmd, "White")
         end
     end
 end
 
--- ABA PLAYER (CHATS FAKES)
-CreateAction("Vouch: Vlww mn", PlayerPage, function() SafeVouch("vlww mn") end)
-CreateAction("Vouch: Chegou aqui", PlayerPage, function() SafeVouch("chegou aqui") end)
-CreateAction("Vouch: Tmjjjj", PlayerPage, function() SafeVouch("tmjjjj") end)
-CreateAction("Vouch: Confiavel", PlayerPage, function() SafeVouch("confiavel") end)
+-- ABA FUN COM OPÇÃO JAIL
+CreateAction("Jail (V)", FunPage, function()
+    MandarComandoFake("jail")
+    local char = player.Character
+    if char and char:FindFirstChild("HumanoidRootPart") then
+        -- Cria a Jaula Visual
+        local jail = Instance.new("Part", char)
+        jail.Size = Vector3.new(8, 10, 8)
+        jail.CFrame = char.HumanoidRootPart.CFrame
+        jail.Anchored = true
+        jail.CanCollide = false
+        jail.Transparency = 0.8
+        jail.Color = Color3.new(0, 0, 0)
+        jail.Material = Enum.Material.Glass
+        
+        local selection = Instance.new("SelectionBox", jail)
+        selection.Adornee = jail
+        selection.LineThickness = 0.05
+        selection.Color3 = Color3.new(0,0,0)
 
--- ABA VISUAL
-CreateAction("Fake Jump", VisualPage, function()
-    local target = nil
-    local dist = math.huge
-    for _, p in pairs(game.Players:GetPlayers()) do
-        if p ~= player and p.Character and p.Character:FindFirstChild("Humanoid") then
-            local d = (player.Character.HumanoidRootPart.Position - p.Character.HumanoidRootPart.Position).Magnitude
-            if d < dist then target = p dist = d end
+        -- Texto "PRESO!" Vermelho
+        local head = char:FindFirstChild("Head")
+        if head then
+            local billboard = Instance.new("BillboardGui", head)
+            billboard.Size = UDim2.new(0, 200, 0, 50)
+            billboard.Adornee = head
+            billboard.AlwaysOnTop = true
+            billboard.ExtentsOffset = Vector3.new(0, 3, 0)
+
+            local text = Instance.new("TextLabel", billboard)
+            text.Size = UDim2.new(1, 0, 1, 0)
+            text.BackgroundTransparency = 1
+            text.Text = "PRESO!"
+            text.TextColor3 = Color3.new(1, 0, 0)
+            text.TextStrokeTransparency = 0
+            text.Font = Enum.Font.GothamBold
+            text.TextSize = 30
+            
+            task.wait(10)
+            jail:Destroy(); billboard:Destroy()
         end
     end
-    if target then target.Character.Humanoid.Jump = true end
 end)
-CreateAction("Fake: Carpete", VisualPage, function() print("Carpete") end)
-CreateAction("Fake: Martelo", VisualPage, function() print("Martelo") end)
 
--- ABA FUN (TOTALMENTE INVISÍVEL)
 CreateAction("Rocket Fogo (V)", FunPage, function()
+    MandarComandoFake("rocket")
     local hrp = player.Character:FindFirstChild("HumanoidRootPart")
     if hrp then
         local f = Instance.new("Fire", hrp)
@@ -144,18 +165,19 @@ CreateAction("Rocket Fogo (V)", FunPage, function()
 end)
 
 CreateAction("Balloon Brainrot (V)", FunPage, function()
+    MandarComandoFake("balloon")
     local hrp = player.Character:FindFirstChild("HumanoidRootPart")
     if hrp then
-        -- Função de subida sem NENHUM objeto visual (bola rosa removida)
         local bv = Instance.new("BodyVelocity", hrp)
         bv.MaxForce = Vector3.new(0, math.huge, 0)
-        bv.Velocity = Vector3.new(0, 20, 0) -- Velocidade constante e lenta
+        bv.Velocity = Vector3.new(0, 20, 0)
         task.wait(5)
         bv:Destroy()
     end
 end)
 
 CreateAction("Ragdoll", FunPage, function()
+    MandarComandoFake("ragdoll")
     local h = player.Character:FindFirstChildOfClass("Humanoid")
     if h then
         h:ChangeState(Enum.HumanoidStateType.Physics)
@@ -164,7 +186,7 @@ CreateAction("Ragdoll", FunPage, function()
     end
 end)
 
--- ROBUX DISPLAY
+-- ROBUX DISPLAY E TOGGLE
 local RobuxDisplay = Instance.new("TextLabel", Main)
 RobuxDisplay.Size = UDim2.new(0, 200, 0, 30)
 RobuxDisplay.Position = UDim2.new(1, -210, 1, -35)
