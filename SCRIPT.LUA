@@ -1,6 +1,7 @@
 local player = game.Players.LocalPlayer
 local pgui = player:WaitForChild("PlayerGui")
 
+-- Limpeza para evitar erros de execução duplicada
 if pgui:FindFirstChild("LK7_KurdStyle_V6") then pgui.LK7_KurdStyle_V6:Destroy() end
 
 local sg = Instance.new("ScreenGui", pgui)
@@ -18,7 +19,6 @@ Main.Active = true
 Main.Draggable = true
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 10)
 
--- TÍTULO
 local Title = Instance.new("TextLabel", Main)
 Title.Text = "LK7 HUB - BRAINROT EDITION"
 Title.Size = UDim2.new(0, 300, 0, 50)
@@ -29,7 +29,6 @@ Title.TextSize = 16
 Title.TextXAlignment = Enum.TextXAlignment.Left
 Title.BackgroundTransparency = 1
 
--- CAIXA DE NOME
 local TargetInput = Instance.new("TextBox", Main)
 TargetInput.Size = UDim2.new(0, 120, 0, 30)
 TargetInput.Position = UDim2.new(0, 10, 0, 55)
@@ -41,16 +40,13 @@ TargetInput.Font = Enum.Font.GothamSemibold
 TargetInput.TextSize = 12
 Instance.new("UICorner", TargetInput)
 
--- SIDEBAR (ABAS)
 local Sidebar = Instance.new("ScrollingFrame", Main)
 Sidebar.Size = UDim2.new(0, 120, 1, -100)
 Sidebar.Position = UDim2.new(0, 10, 0, 95)
 Sidebar.BackgroundTransparency = 1
 Sidebar.ScrollBarThickness = 0
-local sideLayout = Instance.new("UIListLayout", Sidebar)
-sideLayout.Padding = UDim.new(0, 5)
+Instance.new("UIListLayout", Sidebar).Padding = UDim.new(0, 5)
 
--- CONTAINER DE PÁGINAS
 local Pages = Instance.new("Frame", Main)
 Pages.Size = UDim2.new(1, -150, 1, -70)
 Pages.Position = UDim2.new(0, 140, 0, 60)
@@ -103,8 +99,9 @@ local function CreateAction(name, parent, callback)
     btn.MouseButton1Click:Connect(callback)
 end
 
-local function FakeVouch(msg)
+local function SafeVouch(msg)
     local t = TargetInput.Text:lower()
+    if t == "" then return end
     for _, p in pairs(game.Players:GetPlayers()) do
         if p.Name:lower():find(t) or p.DisplayName:lower():find(t) then
             game:GetService("Chat"):Chat(p.Character.Head, msg, "White")
@@ -113,10 +110,10 @@ local function FakeVouch(msg)
 end
 
 -- ABA PLAYER
-CreateAction("Vouch: Vlww mn", PlayerPage, function() FakeVouch("vlww mn") end)
-CreateAction("Vouch: Chegou aqui", PlayerPage, function() FakeVouch("chegou aqui") end)
-CreateAction("Vouch: Tmjjjj", PlayerPage, function() FakeVouch("tmjjjj") end)
-CreateAction("Vouch: Confiavel", PlayerPage, function() FakeVouch("confiavel") end)
+CreateAction("Vouch: Vlww mn", PlayerPage, function() SafeVouch("vlww mn") end)
+CreateAction("Vouch: Chegou aqui", PlayerPage, function() SafeVouch("chegou aqui") end)
+CreateAction("Vouch: Tmjjjj", PlayerPage, function() SafeVouch("tmjjjj") end)
+CreateAction("Vouch: Confiavel", PlayerPage, function() SafeVouch("confiavel") end)
 
 -- ABA VISUAL
 CreateAction("Fake Jump", VisualPage, function()
@@ -130,11 +127,10 @@ CreateAction("Fake Jump", VisualPage, function()
     end
     if target then target.Character.Humanoid.Jump = true end
 end)
-CreateAction("Fake: Carpete", VisualPage, function() print("Carpete") end)
-CreateAction("Fake: Martelo", VisualPage, function() print("Martelo") end)
-CreateAction("Fake: Arma Laser", VisualPage, function() print("Laser") end)
+CreateAction("Fake: Carpete", VisualPage, function() print("Carpete Visual") end)
+CreateAction("Fake: Martelo", VisualPage, function() print("Martelo Visual") end)
 
--- ABA FUN
+-- ABA FUN (SEM O BALÃO ROSA)
 CreateAction("Rocket Fogo (V)", FunPage, function()
     local hrp = player.Character:FindFirstChild("HumanoidRootPart")
     if hrp then
@@ -147,24 +143,15 @@ CreateAction("Rocket Fogo (V)", FunPage, function()
     end
 end)
 
--- NOVO BALÃO (IGUAL ROCKET MAS DEVAGAR)
 CreateAction("Balloon Brainrot (V)", FunPage, function()
     local hrp = player.Character:FindFirstChild("HumanoidRootPart")
     if hrp then
         local bv = Instance.new("BodyVelocity", hrp)
+        bv.Name = "FloatForce"
         bv.MaxForce = Vector3.new(0, math.huge, 0)
-        bv.Velocity = Vector3.new(0, 25, 0) -- Velocidade lenta (25 em vez de 150)
-        
-        -- Efeito visual do Balão
-        local b = Instance.new("Part", player.Character)
-        b.Shape = "Ball"
-        b.Size = Vector3.new(4,4,4)
-        b.Color = Color3.fromRGB(255, 85, 255)
-        b.Position = hrp.Position + Vector3.new(0, 7, 0)
-        b.CanCollide = false
-        
-        task.wait(5) -- Sobe por 5 segundos
-        bv:Destroy(); b:Destroy()
+        bv.Velocity = Vector3.new(0, 20, 0) -- Sobe bem devagar e sem nada visual
+        task.wait(5)
+        bv:Destroy()
     end
 end)
 
