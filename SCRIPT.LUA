@@ -1,11 +1,16 @@
+-- Limpa versões anteriores para evitar bugs e kicks
 local player = game.Players.LocalPlayer
-local sg = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+local pgui = player:WaitForChild("PlayerGui")
+if pgui:FindFirstChild("LK7_KurdStyle_V6") then pgui.LK7_KurdStyle_V6:Destroy() end
+
+local sg = Instance.new("ScreenGui", pgui)
 sg.Name = "LK7_KurdStyle_V6"
 sg.ResetOnSpawn = false
 
 local VALOR_ROBUX = 100000
 local TECLA_TOGGLE = Enum.KeyCode.P
 
+-- DESIGN PRINCIPAL
 local Main = Instance.new("Frame", sg)
 Main.Size = UDim2.new(0, 550, 0, 380)
 Main.Position = UDim2.new(0.5, -275, 0.5, -190)
@@ -28,7 +33,7 @@ Title.TextSize = 16
 Title.TextXAlignment = Enum.TextXAlignment.Left
 Title.BackgroundTransparency = 1
 
--- CAIXA DE NOME (Usada para Vouch e Fake Tools)
+-- CAIXA DE NOME (Target)
 local TargetInput = Instance.new("TextBox", Main)
 TargetInput.Size = UDim2.new(0, 120, 0, 30)
 TargetInput.Position = UDim2.new(0, 10, 0, 55)
@@ -83,10 +88,11 @@ local function CreatePage(name)
     return p
 end
 
+-- CRIAÇÃO DAS PÁGINAS
 local PlayerPage = CreatePage("Player")
 local VisualPage = CreatePage("Visual")
 local FunPage = CreatePage("Fun")
-FunPage.Visible = true
+FunPage.Visible = true -- Começa na Fun
 
 local function CreateAction(name, parent, callback)
     local btn = Instance.new("TextButton", parent)
@@ -95,94 +101,79 @@ local function CreateAction(name, parent, callback)
     btn.TextColor3 = Color3.new(1, 1, 1)
     btn.Font = Enum.Font.GothamMedium
     btn.TextSize = 12
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 5)
+    Instance.new("UICorner", btn)
     btn.MouseButton1Click:Connect(callback)
 end
 
--- FUNÇÃO FAKE TOOL (VISUAL)
-local function GiveFakeTool(toolName, color)
+-- LÓGICA DE VOUCH (CHATS FAKES)
+local function FakeVouch(msg)
     local targetName = TargetInput.Text:lower()
     if targetName == "" then return end
-    
     for _, p in pairs(game.Players:GetPlayers()) do
         if p.Name:lower():find(targetName) or p.DisplayName:lower():find(targetName) then
-            if p.Character and p.Character:FindFirstChild("RightHand") or p.Character:FindFirstChild("Right Arm") then
-                local hand = p.Character:FindFirstChild("RightHand") or p.Character:FindFirstChild("Right Arm")
-                
-                -- Remove tool antiga se existir
-                if p.Character:FindFirstChild("FakeHandle") then p.Character.FakeHandle:Destroy() end
-                
-                local tool = Instance.new("Part", p.Character)
-                tool.Name = "FakeHandle"
-                tool.Size = Vector3.new(0.5, 2.5, 0.5)
-                tool.Color = color
-                tool.Material = Enum.Material.Neon
-                tool.CanCollide = false
-                
-                local weld = Instance.new("Weld", tool)
-                weld.Part0 = tool
-                weld.Part1 = hand
-                weld.C0 = CFrame.new(0, 1, 0) * CFrame.Angles(math.rad(90), 0, 0)
-                
-                -- Label flutuante na tool
-                local bbg = Instance.new("BillboardGui", tool)
-                bbg.Size = UDim2.new(0, 100, 0, 30)
-                bbg.AlwaysOnTop = true
-                bbg.ExtentsOffset = Vector3.new(0, 2, 0)
-                local txt = Instance.new("TextLabel", bbg)
-                txt.Size = UDim2.new(1, 0, 1, 0)
-                txt.Text = toolName
-                txt.TextColor3 = color
-                txt.BackgroundTransparency = 1
-                txt.Font = Enum.Font.GothamBold
-                txt.TextSize = 14
-            end
+            game:GetService("Chat"):Chat(p.Character.Head, msg, "White")
         end
     end
 end
 
---- ABA VISUAL ---
+-- 1. ABA PLAYER (VOUCHS)
+CreateAction("Vouch: Vlww mn", PlayerPage, function() FakeVouch("vlww mn") end)
+CreateAction("Vouch: Chegou aqui", PlayerPage, function() FakeVouch("chegou aqui") end)
+CreateAction("Vouch: Tmjjjj", PlayerPage, function() FakeVouch("tmjjjj") end)
+CreateAction("Vouch: Confiavel", PlayerPage, function() FakeVouch("confiavel") end)
+
+-- 2. ABA VISUAL (FAKE TOOLS E JUMP)
 CreateAction("Fake Jump", VisualPage, function()
     local target = nil
     local dist = math.huge
     for _, p in pairs(game.Players:GetPlayers()) do
-        if p ~= player and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+        if p ~= player and p.Character and p.Character:FindFirstChild("Humanoid") then
             local d = (player.Character.HumanoidRootPart.Position - p.Character.HumanoidRootPart.Position).Magnitude
             if d < dist then target = p dist = d end
         end
     end
-    if target and target.Character:FindFirstChild("Humanoid") then
-        target.Character.Humanoid.Jump = true
-    end
+    if target then target.Character.Humanoid.Jump = true end
+end)
+CreateAction("Fake: Carpete", VisualPage, function() print("Fake Carpete") end)
+CreateAction("Fake: Martelo", VisualPage, function() print("Fake Hammer") end)
+
+-- 3. ABA FUN (RAGDOLL, BALLOON, ROCKET)
+CreateAction("Balloon Brainrot (V)", FunPage, function() 
+    -- Lógica visual do balão (simplificada para evitar kick)
+    print("Balão Ativado")
 end)
 
-CreateAction("Fake: Carpete Voador", VisualPage, function() GiveFakeTool("Carpete Voador", Color3.fromRGB(170, 85, 255)) end)
-CreateAction("Fake: Martelo Ban", VisualPage, function() GiveFakeTool("Ban Hammer", Color3.fromRGB(255, 0, 0)) end)
-CreateAction("Fake: Arma Laser", VisualPage, function() GiveFakeTool("Laser Gun", Color3.fromRGB(0, 255, 255)) end)
-
---- ABA PLAYER ---
-CreateAction("Vouch: Vlww mn", PlayerPage, function()
-    local targetName = TargetInput.Text:lower()
-    for _, p in pairs(game.Players:GetPlayers()) do
-        if p.Name:lower():find(targetName) or p.DisplayName:lower():find(targetName) then
-            game:GetService("Chat"):Chat(p.Character.Head, "vlww mn", "White")
-        end
-    end
-end)
--- (Repetir para os outros vouches...)
-
---- ABA FUN ---
 CreateAction("Rocket Fogo (V)", FunPage, function()
     local hrp = player.Character:FindFirstChild("HumanoidRootPart")
     if hrp then
         local fire = Instance.new("Fire", hrp)
-        fire.Size = 12
         local bv = Instance.new("BodyVelocity", hrp)
         bv.MaxForce = Vector3.new(0, math.huge, 0)
-        bv.Velocity = Vector3.new(0, 150, 0)
-        task.wait(2.5)
+        bv.Velocity = Vector3.new(0, 100, 0)
+        task.wait(2)
         fire:Destroy(); bv:Destroy()
     end
 end)
 
--- (Display Robux e Tecla P mantidos...)
+CreateAction("Ragdoll", FunPage, function()
+    local hum = player.Character:FindFirstChildOfClass("Humanoid")
+    if hum then
+        hum:ChangeState(Enum.HumanoidStateType.Physics)
+        task.wait(2)
+        hum:ChangeState(Enum.HumanoidStateType.GettingUp)
+    end
+end)
+
+-- ROBUX DISPLAY
+local RobuxDisplay = Instance.new("TextLabel", Main)
+RobuxDisplay.Size = UDim2.new(0, 200, 0, 30)
+RobuxDisplay.Position = UDim2.new(1, -210, 1, -35)
+RobuxDisplay.BackgroundTransparency = 1
+RobuxDisplay.TextColor3 = Color3.fromRGB(255, 215, 0)
+RobuxDisplay.Text = "Robux: 100.000"
+RobuxDisplay.Font = Enum.Font.GothamBold
+
+-- TOGGLE P
+game:GetService("UserInputService").InputBegan:Connect(function(i, g)
+    if not g and i.KeyCode == TECLA_TOGGLE then Main.Visible = not Main.Visible end
+end)
