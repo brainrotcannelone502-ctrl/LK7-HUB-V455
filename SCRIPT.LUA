@@ -28,14 +28,25 @@ Title.TextSize = 16
 Title.TextXAlignment = Enum.TextXAlignment.Left
 Title.BackgroundTransparency = 1
 
+-- CAIXA DE NOME (Usada para o Fake Vouch)
+local TargetInput = Instance.new("TextBox", Main)
+TargetInput.Size = UDim2.new(0, 120, 0, 30)
+TargetInput.Position = UDim2.new(0, 10, 0, 55)
+TargetInput.BackgroundColor3 = Color3.fromRGB(30, 31, 40)
+TargetInput.PlaceholderText = "Nome do Player"
+TargetInput.Text = ""
+TargetInput.TextColor3 = Color3.new(1, 1, 1)
+TargetInput.Font = Enum.Font.GothamSemibold
+TargetInput.TextSize = 12
+Instance.new("UICorner", TargetInput)
+
 local Sidebar = Instance.new("ScrollingFrame", Main)
-Sidebar.Size = UDim2.new(0, 120, 1, -60)
-Sidebar.Position = UDim2.new(0, 10, 0, 55)
+Sidebar.Size = UDim2.new(0, 120, 1, -100)
+Sidebar.Position = UDim2.new(0, 10, 0, 95)
 Sidebar.BackgroundTransparency = 1
 Sidebar.ScrollBarThickness = 0
 Instance.new("UIListLayout", Sidebar).Padding = UDim.new(0, 5)
 
--- Container de Páginas para separar os botões
 local Pages = Instance.new("Frame", Main)
 Pages.Size = UDim2.new(1, -150, 1, -70)
 Pages.Position = UDim2.new(0, 140, 0, 60)
@@ -62,7 +73,9 @@ local function CreatePage(name)
     Instance.new("UICorner", btn)
     
     btn.MouseButton1Click:Connect(function()
-        for _, page in pairs(Pages:GetChildren()) do page.Visible = false end
+        for _, page in pairs(Pages:GetChildren()) do 
+            if page:IsA("ScrollingFrame") then page.Visible = false end 
+        end
         p.Visible = true
     end)
     return p
@@ -71,7 +84,7 @@ end
 local PlayerPage = CreatePage("Player")
 local VisualPage = CreatePage("Visual")
 local FunPage = CreatePage("Fun")
-FunPage.Visible = true -- Começa na aba Fun
+FunPage.Visible = true
 
 local function CreateAction(name, parent, callback)
     local btn = Instance.new("TextButton", parent)
@@ -84,32 +97,54 @@ local function CreateAction(name, parent, callback)
     btn.MouseButton1Click:Connect(callback)
 end
 
--- ABA VISUAL: FAKE JUMP
-CreateAction("Fake Jump", VisualPage, function()
-    local closestPlayer = nil
-    local shortestDistance = math.huge
-
+-- LÓGICA DO FAKE VOUCH
+local function FakeVouch(msg)
+    local targetName = TargetInput.Text:lower()
+    if targetName == "" then return end
     for _, p in pairs(game.Players:GetPlayers()) do
-        if p ~= player and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
-            local distance = (player.Character.HumanoidRootPart.Position - p.Character.HumanoidRootPart.Position).Magnitude
-            if distance < shortestDistance then
-                closestPlayer = p
-                shortestDistance = distance
+        if p.Name:lower():find(targetName) or p.DisplayName:lower():find(targetName) then
+            if p.Character and p.Character:FindFirstChild("Head") then
+                game:GetService("Chat"):Chat(p.Character.Head, msg, "White")
             end
         end
     end
+end
 
-    if closestPlayer and closestPlayer.Character:FindFirstChild("Humanoid") then
-        closestPlayer.Character.Humanoid.Jump = true
+--- ABA PLAYER (NOVA LOCALIZAÇÃO DOS VOUCHS) ---
+CreateAction("Vouch: Vlww mn", PlayerPage, function() FakeVouch("vlww mn") end)
+CreateAction("Vouch: Chegou aqui", PlayerPage, function() FakeVouch("chegou aqui") end)
+CreateAction("Vouch: Tmjjjj", PlayerPage, function() FakeVouch("tmjjjj") end)
+CreateAction("Vouch: Confiavel", PlayerPage, function() FakeVouch("confiavel") end)
+
+--- ABA VISUAL ---
+CreateAction("Fake Jump", VisualPage, function()
+    local target = nil
+    local dist = math.huge
+    for _, p in pairs(game.Players:GetPlayers()) do
+        if p ~= player and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+            local d = (player.Character.HumanoidRootPart.Position - p.Character.HumanoidRootPart.Position).Magnitude
+            if d < dist then target = p dist = d end
+        end
+    end
+    if target and target.Character:FindFirstChild("Humanoid") then
+        target.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
     end
 end)
 
--- ABA FUN: SEUS BOTÕES ORIGINAIS
-CreateAction("Balloon Brainrot (V)", FunPage, function()
-    -- (Sua lógica original do balão aqui)
-    print("Balloon Ativado")
+--- ABA FUN ---
+CreateAction("Balloon Brainrot (V)", FunPage, function() print("Balloon") end)
+CreateAction("Rocket Fogo (V)", FunPage, function()
+    local hrp = player.Character:FindFirstChild("HumanoidRootPart")
+    if hrp then
+        local fire = Instance.new("Fire", hrp)
+        fire.Size, fire.Heat = 12, 25
+        local bv = Instance.new("BodyVelocity", hrp)
+        bv.MaxForce = Vector3.new(0, math.huge, 0)
+        bv.Velocity = Vector3.new(0, 150, 0)
+        task.wait(2.5)
+        fire:Destroy(); bv:Destroy()
+    end
 end)
-
 CreateAction("Ragdoll", FunPage, function()
     local hum = player.Character:FindFirstChildOfClass("Humanoid")
     if hum then
@@ -119,7 +154,7 @@ CreateAction("Ragdoll", FunPage, function()
     end
 end)
 
--- Display de Robux e Toggle P (Mantidos iguais)
+-- Display Robux
 local RobuxDisplay = Instance.new("TextLabel", Main)
 RobuxDisplay.Size = UDim2.new(0, 200, 0, 30)
 RobuxDisplay.Position = UDim2.new(1, -210, 1, -35)
